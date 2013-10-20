@@ -1,27 +1,35 @@
 module ReverseAutoDiff
 
-type RADValue
+type Acc
     v
     d
 end
 
-RADValue(x) = RADValue(x, zero(x))
+Acc(x) = Acc(x, zero(x))
 
-function *(a::RADValue, b::RADValue)
-    RADValue(a.v * b.v)
+function *(a::Acc, b::Acc)
+    Acc(a.v * b.v)
 end
 
-function backpropagate(v::RADValue)
+function backpropagate(v::Acc)
     v.d = 1.0
 end
 
+assign(a::Acc, x) = (a.v = x)
+
 function test()
-    x = RADValue(3.0)
+    x = Acc(3.0)
     f() = x
 
     y = f()
     backpropagate(y)
     @assert isequal(y.v, 3.0)
+    @assert isequal(x.d, 1.0)
+
+    assign(x, 2.0)
+    y = f()
+    backpropagate(y)
+    @assert isequal(y.v, 2.0)
     @assert isequal(x.d, 1.0)
 end
 
