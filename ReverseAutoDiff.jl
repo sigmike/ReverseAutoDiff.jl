@@ -2,12 +2,14 @@ module ReverseAutoDiff
 
 type Acc
     v
-    d
     parents
     ratios
+    d
+
 end
 
-Acc(x) = Acc(x, zero(x),(), ())
+Acc(x, parents, ratios) = Acc(x, parents, ratios, zero(x))
+Acc(x) = Acc(x, (), ())
 
 function *(a::Acc, b::Acc)
     Acc(a.v * b.v)
@@ -23,11 +25,11 @@ end
 assign(a::Acc, x) = (a.d = 1; a.v = x)
 
 function *(x, y::Acc)
-    Acc(y.v * x, 1.0, (y,), (x,))
+    Acc(y.v * x, (y,), (x,))
 end
 
 function +(x::Acc, y::Acc)
-    Acc(x.v + y.v, 1.0, (x,y), (1,1))
+    Acc(x.v + y.v, (x,y), (1,1))
 end
 
 function ==(x::Acc, y)
