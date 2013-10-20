@@ -13,17 +13,16 @@ end
 
 function backpropagate(v::RADValue)
     v.d = 1.0
-    v.terms[1].d = 
 end
 
 function test()
     x = RADValue(3.0)
-    f() = x*x
+    f() = x
 
     y = f()
     backpropagate(y)
-    @assert isequal(y.v, 9.0)
-    @assert isequal(x.d, 6.0)
+    @assert isequal(y.v, 3.0)
+    @assert isequal(x.d, 1.0)
 end
 
 end
