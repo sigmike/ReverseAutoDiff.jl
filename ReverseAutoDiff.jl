@@ -12,6 +12,8 @@ function *(a::RADValue, b::RADValue)
 end
 
 function backpropagate(v::RADValue)
+    v.d = 1.0
+    v.terms[1].d = 
 end
 
 function test()
