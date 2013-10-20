@@ -36,6 +36,12 @@ function ==(x::Acc, y)
     x.v == y
 end
 
+import Base.tanh
+function tanh(x::Acc)
+    t = tanh(x.v)
+    Acc(t, (x,), (1-t^2,))
+end
+
 using Base.Test
 
 function test()
@@ -70,6 +76,13 @@ function test()
     @test z == 11.0
     @test x.d == 6.0
     @test y.d == 2.0
+
+    assign(x, 0.1234)
+    A = 1.7159
+    S = 2 / 3
+    y = A * tanh(S * x)
+    backpropagate(y)
+    @test x.d == (A*(1 - tanh(S*x.v)^2) * S)
 end
 
 end
