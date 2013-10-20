@@ -19,14 +19,12 @@ assign(a::Acc, x) = (a.v = x)
 
 function test()
     x = Acc(3.0)
-    y = x
-    backpropagate(y)
+    backpropagate(y = x)
     @assert isequal(y.v, 3.0)
     @assert isequal(x.d, 1.0)
 
     assign(x, 2.0)
-    y = x
-    backpropagate(y)
+    backpropagate(y = x)
     @assert isequal(y.v, 2.0)
     @assert isequal(x.d, 1.0)
 end
