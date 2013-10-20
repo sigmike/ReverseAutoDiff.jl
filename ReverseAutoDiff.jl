@@ -12,17 +12,56 @@ Acc(x, parents, ratios) = Acc(x, parents, ratios, zero(x))
 Acc(x) = Acc(x, (), ())
 
 function *(a::Acc, b::Acc)
-    Acc(a.v * b.v)
+    Acc(a.v * b.v, (a,b), (b.v,a.v))
 end
 
-function backpropagate(v::Acc, r = one(v.v))
-    v.d = r
+function restart_backpropagation(v::Acc)
+    v.d = zero(v.v)
     for i in 1:length(v.parents)
-        backpropagate(v.parents[i], v.d * v.ratios[i])
+        restart_backpropagation(v.parents[i])
     end
 end
 
-assign(a::Acc, x) = (a.d = 1; a.v = x)
+function backpropagate(v::Acc)
+    restart_backpropagation(v)
+    backpropagate(v, one(v.v))
+end
+
+function backpropagate(v::Acc, r)
+    v.d += r
+    for i in 1:length(v.parents)
+        backpropagate(v.parents[i], r * v.ratios[i])
+    end
+end
+
+import Base.show
+show(io::IO, x::Acc) = (println(io, "Acc"); show(io, x, 1))
+function show(io::IO, x::Acc, indent_count, r = Nothing)
+    indent = repeat("  ", indent_count)
+    print(io, indent)
+    if r != Nothing
+        print(io, "r=")
+        show(io, r)
+        print(io, " ")
+    end
+    print(io, "id=")
+    show(io, object_id(x))
+    print(io, " v=")
+    show(io, x.v)
+    print(io, " d=")
+    show(io, x.d)
+    println(io)
+    for i in 1:length(x.parents)
+        show(io, x.parents[i], indent_count + 1, x.ratios[i])
+    end
+end
+
+function assign(a::Acc, x)
+    a.d = zero(a.v)
+    a.v = x
+    a.parents = ()
+    a.ratios = ()
+end
 
 function *(x, y::Acc)
     Acc(y.v * x, (y,), (x,))
@@ -73,7 +112,8 @@ function test()
 
     t = 2z
     backpropagate(t)
-    @test z == 11.0
+    @test t == 22.0
+    @test z.d == 2.0
     @test x.d == 6.0
     @test y.d == 2.0
 
@@ -83,6 +123,12 @@ function test()
     y = A * tanh(S * x)
     backpropagate(y)
     @test x.d == (A*(1 - tanh(S*x.v)^2) * S)
+
+    assign(x, 3.0)
+    y = x*x
+    backpropagate(y)
+    @test y.v == 9.0
+    @test x.d == 6.0
 end
 
 end
