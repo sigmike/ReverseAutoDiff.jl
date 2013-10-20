@@ -30,6 +30,9 @@ function +(x::Acc, y::Acc)
     Acc(x.v + y.v, 1.0, (x,y), (1,1))
 end
 
+function ==(x::Acc, y)
+    x.v == y
+end
 
 using Base.Test
 
@@ -37,26 +40,26 @@ function test()
     x = Acc(3.0)
     y = x
     backpropagate(y)
-    @test y.v == 3.0
+    @test y == 3.0
     @test x.d == 1.0
 
     assign(x, 2.0)
     y = x
     backpropagate(y)
-    @test y.v == 2.0
+    @test y == 2.0
     @test x.d == 1.0
 
     assign(x, 2.0)
     y = 3x
     backpropagate(y)
-    @test y.v == 6.0
+    @test y == 6.0
     @test x.d == 3.0
     
     assign(x, 2.0)
     assign(y, 5.0)
     z = 3x + y
     backpropagate(z)
-    @test z.v == 11.0
+    @test z == 11.0
     @test x.d == 3.0
     @test y.d == 1.0
 end
