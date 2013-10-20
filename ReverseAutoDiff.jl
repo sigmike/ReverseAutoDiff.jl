@@ -18,7 +18,7 @@ end
 function backpropagate(v::Acc, r = one(v.v))
     v.d = r
     for i in 1:length(v.parents)
-        backpropagate(v.parents[i], v.ratios[i])
+        backpropagate(v.parents[i], v.d * v.ratios[i])
     end
 end
 
@@ -64,6 +64,12 @@ function test()
     @test z == 11.0
     @test x.d == 3.0
     @test y.d == 1.0
+
+    t = 2z
+    backpropagate(t)
+    @test z == 11.0
+    @test x.d == 6.0
+    @test y.d == 2.0
 end
 
 end
