@@ -26,6 +26,11 @@ function *(x, y::Acc)
     Acc(y.v * x, 1.0, (y,), (x,))
 end
 
+function +(x::Acc, y::Acc)
+    Acc(x.v + y.v, 1.0, (x,y), (1,1))
+end
+
+
 using Base.Test
 
 function test()
@@ -46,6 +51,14 @@ function test()
     backpropagate(y)
     @test y.v == 6.0
     @test x.d == 3.0
+    
+    assign(x, 2.0)
+    assign(y, 5.0)
+    z = 3x + y
+    backpropagate(z)
+    @test z.v == 11.0
+    @test x.d == 3.0
+    @test y.d == 1.0
 end
 
 end
