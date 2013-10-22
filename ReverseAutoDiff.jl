@@ -75,6 +75,14 @@ function ==(x::Acc, y)
     x.v == y
 end
 
+function -(x::Acc, y)
+    Acc(x.v - y, (x,), (1,))
+end
+
+function -(x::Acc, y::Acc)
+    Acc(x.v - y.v, (x,y), (1,-1))
+end
+
 import Base.tanh
 function tanh(x::Acc)
     t = tanh(x.v)
@@ -141,6 +149,12 @@ function test()
     for i in 1:length(a)
         @test_approx_eq a[i].d d[i]
     end
+
+    x = Acc(1.23)
+    y = Acc(2.34)
+    z = ((x + y) * (x - 2.5)) * x + x
+    backpropagate(z)
+    @test_approx_eq x.d (x.v*(y.v+x.v)+(x.v-2.5)*(y.v+x.v)+(x.v-2.5)*x.v + 1)
 
 end
 
