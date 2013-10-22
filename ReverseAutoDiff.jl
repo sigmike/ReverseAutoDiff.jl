@@ -129,6 +129,19 @@ function test()
     backpropagate(y)
     @test y.v == 9.0
     @test x.d == 6.0
+
+    a = [Acc(i) for i in 1.0:30.0]
+    b = a[1]
+    for i in 2:length(a)
+        b *= a[i]
+    end
+    d = [b.v/a[i].v for i in 1:length(a)]
+    
+    backpropagate(b)
+    for i in 1:length(a)
+        @test_approx_eq a[i].d d[i]
+    end
+
 end
 
 end
