@@ -67,6 +67,10 @@ function *(x, y::Acc)
     Acc(y.v * x, (y,), (x,))
 end
 
+function .*(x::Acc, y)
+    Acc(x.v .* y, (x,), (y,))
+end
+
 function +(x::Acc, y::Acc)
     Acc(x.v + y.v, (x,y), (1,1))
 end
@@ -156,6 +160,10 @@ function test()
     backpropagate(z)
     @test_approx_eq x.d (x.v*(y.v+x.v)+(x.v-2.5)*(y.v+x.v)+(x.v-2.5)*x.v + 1)
 
+    a = [Acc(x) for x in rand(10)]
+    b = sum(a .* 2)
+    backpropagate(b)
+    @test_approx_eq a[2].d 2.0
 end
 
 end
