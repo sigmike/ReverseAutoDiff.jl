@@ -1,6 +1,6 @@
 module ReverseAutoDiff
 
-type Acc
+type RAD
     v
     parents
     partials
@@ -8,26 +8,26 @@ type Acc
 
 end
 
-Acc(x, parents, partials) = Acc(x, parents, partials, zero(x))
-Acc(x) = Acc(x, (), ())
+RAD(x, parents, partials) = RAD(x, parents, partials, zero(x))
+RAD(x) = RAD(x, (), ())
 
-function *(a::Acc, b::Acc)
-    Acc(a.v * b.v, (a,b), (b.v,a.v))
+function *(a::RAD, b::RAD)
+    RAD(a.v * b.v, (a,b), (b.v,a.v))
 end
 
-function restart_backpropagation(v::Acc)
+function restart_backpropagation(v::RAD)
     v.d = zero(v.v)
     for i in 1:length(v.parents)
         restart_backpropagation(v.parents[i])
     end
 end
 
-function backpropagate(v::Acc)
+function backpropagate(v::RAD)
     restart_backpropagation(v)
     backpropagate(v, one(v.v))
 end
 
-function backpropagate(v::Acc, r)
+function backpropagate(v::RAD, r)
     v.d += r
     for i in 1:length(v.parents)
         backpropagate(v.parents[i], r * v.partials[i])
@@ -35,8 +35,8 @@ function backpropagate(v::Acc, r)
 end
 
 import Base.show
-show(io::IO, x::Acc) = (println(io, "Acc"); show(io, x, 1))
-function show(io::IO, x::Acc, indent_count, r = Nothing)
+show(io::IO, x::RAD) = (println(io, "RAD"); show(io, x, 1))
+function show(io::IO, x::RAD, indent_count, r = Nothing)
     indent = repeat("  ", indent_count)
     print(io, indent)
     if r != Nothing
@@ -56,47 +56,47 @@ function show(io::IO, x::Acc, indent_count, r = Nothing)
     end
 end
 
-function assign(a::Acc, x)
+function assign(a::RAD, x)
     a.d = zero(a.v)
     a.v = x
     a.parents = ()
     a.partials = ()
 end
 
-function *(x, y::Acc)
-    Acc(y.v * x, (y,), (x,))
+function *(x, y::RAD)
+    RAD(y.v * x, (y,), (x,))
 end
 
-function .*(x::Acc, y)
-    Acc(x.v .* y, (x,), (y,))
+function .*(x::RAD, y)
+    RAD(x.v .* y, (x,), (y,))
 end
 
-function +(x::Acc, y::Acc)
-    Acc(x.v + y.v, (x,y), (1,1))
+function +(x::RAD, y::RAD)
+    RAD(x.v + y.v, (x,y), (1,1))
 end
 
-function ==(x::Acc, y)
+function ==(x::RAD, y)
     x.v == y
 end
 
-function -(x::Acc, y)
-    Acc(x.v - y, (x,), (1,))
+function -(x::RAD, y)
+    RAD(x.v - y, (x,), (1,))
 end
 
-function -(x::Acc, y::Acc)
-    Acc(x.v - y.v, (x,y), (1,-1))
+function -(x::RAD, y::RAD)
+    RAD(x.v - y.v, (x,y), (1,-1))
 end
 
 import Base.tanh
-function tanh(x::Acc)
+function tanh(x::RAD)
     t = tanh(x.v)
-    Acc(t, (x,), (1-t^2,))
+    RAD(t, (x,), (1-t^2,))
 end
 
 using Base.Test
 
 function test()
-    x = Acc(3.0)
+    x = RAD(3.0)
     y = x
     backpropagate(y)
     @test y == 3.0
@@ -142,7 +142,7 @@ function test()
     @test y.v == 9.0
     @test x.d == 6.0
 
-    a = [Acc(i) for i in 1.0:30.0]
+    a = [RAD(i) for i in 1.0:30.0]
     b = a[1]
     for i in 2:length(a)
         b *= a[i]
@@ -154,13 +154,13 @@ function test()
         @test_approx_eq a[i].d d[i]
     end
 
-    x = Acc(1.23)
-    y = Acc(2.34)
+    x = RAD(1.23)
+    y = RAD(2.34)
     z = ((x + y) * (x - 2.5)) * x + x
     backpropagate(z)
     @test_approx_eq x.d (x.v*(y.v+x.v)+(x.v-2.5)*(y.v+x.v)+(x.v-2.5)*x.v + 1)
 
-    a = [Acc(x) for x in rand(10)]
+    a = [RAD(x) for x in rand(10)]
     b = sum(a .* 2)
     backpropagate(b)
     @test_approx_eq a[2].d 2.0
