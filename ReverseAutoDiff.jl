@@ -2,17 +2,17 @@ module ReverseAutoDiff
 
 type RAD
     v
-    parents
+    parents::Array{RAD,1}
     partials
     d
 
 end
 
 RAD(x, parents, partials) = RAD(x, parents, partials, zero(x))
-RAD(x) = RAD(x, (), ())
+RAD(x) = RAD(x, RAD[], ())
 
 function *(a::RAD, b::RAD)
-    RAD(a.v * b.v, (a,b), (b.v,a.v))
+    RAD(a.v * b.v, [a,b], (b.v,a.v))
 end
 
 function restart_backpropagation(v::RAD)
@@ -59,20 +59,20 @@ end
 function assign(a::RAD, x)
     a.d = zero(a.v)
     a.v = x
-    a.parents = ()
+    a.parents = RAD[]
     a.partials = ()
 end
 
 function *(x, y::RAD)
-    RAD(y.v * x, (y,), (x,))
+    RAD(y.v * x, [y], (x,))
 end
 
 function .*(x::RAD, y)
-    RAD(x.v .* y, (x,), (y,))
+    RAD(x.v .* y, [x,], (y,))
 end
 
 function +(x::RAD, y::RAD)
-    RAD(x.v + y.v, (x,y), (1,1))
+    RAD(x.v + y.v, [x,y], (1,1))
 end
 
 function ==(x::RAD, y)
@@ -80,17 +80,17 @@ function ==(x::RAD, y)
 end
 
 function -(x::RAD, y)
-    RAD(x.v - y, (x,), (1,))
+    RAD(x.v - y, [x,], (1,))
 end
 
 function -(x::RAD, y::RAD)
-    RAD(x.v - y.v, (x,y), (1,-1))
+    RAD(x.v - y.v, [x,y], (1,-1))
 end
 
 import Base.tanh
 function tanh(x::RAD)
     t = tanh(x.v)
-    RAD(t, (x,), (1-t^2,))
+    RAD(t, [x,], (1-t^2,))
 end
 
 using Base.Test
