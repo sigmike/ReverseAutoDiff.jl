@@ -3,12 +3,12 @@ module ReverseAutoDiff
 type Acc
     v
     parents
-    ratios
+    partials
     d
 
 end
 
-Acc(x, parents, ratios) = Acc(x, parents, ratios, zero(x))
+Acc(x, parents, partials) = Acc(x, parents, partials, zero(x))
 Acc(x) = Acc(x, (), ())
 
 function *(a::Acc, b::Acc)
@@ -30,7 +30,7 @@ end
 function backpropagate(v::Acc, r)
     v.d += r
     for i in 1:length(v.parents)
-        backpropagate(v.parents[i], r * v.ratios[i])
+        backpropagate(v.parents[i], r * v.partials[i])
     end
 end
 
@@ -52,7 +52,7 @@ function show(io::IO, x::Acc, indent_count, r = Nothing)
     show(io, x.d)
     println(io)
     for i in 1:length(x.parents)
-        show(io, x.parents[i], indent_count + 1, x.ratios[i])
+        show(io, x.parents[i], indent_count + 1, x.partials[i])
     end
 end
 
@@ -60,7 +60,7 @@ function assign(a::Acc, x)
     a.d = zero(a.v)
     a.v = x
     a.parents = ()
-    a.ratios = ()
+    a.partials = ()
 end
 
 function *(x, y::Acc)
