@@ -164,6 +164,15 @@ function test()
     b = sum(a .* 2)
     backpropagate(b)
     @test_approx_eq a[2].d 2.0
+
+    input = rand(100)
+    weights = RAD[RAD(x) for x in rand(100)]
+    output = RAD(0.0)
+    for i in 1:length(weights)
+        output += input[i] * weights[i]
+    end
+    backpropagate(output)
+    @test_approx_eq input[5] weights[5].d
 end
 
 end
