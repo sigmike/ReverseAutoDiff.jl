@@ -63,8 +63,12 @@ function assign(a::RAD, x)
     a.partials = ()
 end
 
-function *(x, y::RAD)
+function *(x::Real, y::RAD)
     RAD(y.v * x, [y], (x,))
+end
+
+function *(x::RAD, y::Real)
+    RAD(x.v * y, [x], (y,))
 end
 
 function .*(x::RAD, y)
@@ -75,8 +79,20 @@ function +(x::RAD, y::RAD)
     RAD(x.v + y.v, [x,y], (1,1))
 end
 
++(x::RAD, y::Real) = RAD(x.v+y, [x], (1,))
++(x::Real, y::RAD) = RAD(x+y.v, [y], (1,))
+
+-(x::RAD, y::Real) = RAD(x.v-y, [x], (1,))
+-(x::Real, y::RAD) = RAD(x-y.v, [y], (-1,))
+
+/(x::Real, y::RAD) = RAD(x/y.v, [y], (-x/(y.v^2),))
+
 function ==(x::RAD, y)
     x.v == y
+end
+
+function -(x::RAD)
+    RAD(-x.v, [x,], (-1,))
 end
 
 function -(x::RAD, y)
@@ -85,6 +101,24 @@ end
 
 function -(x::RAD, y::RAD)
     RAD(x.v - y.v, [x,y], (1,-1))
+end
+
+import Base.abs
+function abs(x::RAD)
+    if x.v == zero(x.v)
+        throw(DomainError())
+    end
+    if x.v < 0
+        -x
+    else
+        x
+    end
+end
+
+import Base.exp
+function exp(x::RAD)
+    exp_x = exp(x.v)
+    RAD(exp_x, [x], (exp_x,))
 end
 
 import Base.tanh
@@ -164,15 +198,21 @@ function test()
     b = sum(a .* 2)
     backpropagate(b)
     @test_approx_eq a[2].d 2.0
+end
 
-    input = rand(100)
-    weights = RAD[RAD(x) for x in rand(100)]
-    output = RAD(0.0)
-    for i in 1:length(weights)
-        output += input[i] * weights[i]
+function test_neural_network()
+    # https://en.wikipedia.org/w/index.php?title=Backpropagation&oldid=577461892#Derivation
+    n = 10
+    w = [RAD(x) for x in rand(n)]
+    x = rand(n)
+    t = rand()
+    activation(z) = 1.0 / (1 + exp(-z))
+    y = activation(sum([w[i] * x[i] for i in 1:n]))
+    E = 0.5 * ((t - y) ^ 2)
+    backpropagate(E)
+    for i in 1:n
+        @test_approx_eq w[i].d ((y.v - t) * y.v * (1 - y.v) * x[i])
     end
-    backpropagate(output)
-    @test_approx_eq input[5] weights[5].d
 end
 
 end
