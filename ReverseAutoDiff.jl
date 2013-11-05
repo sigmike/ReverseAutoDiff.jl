@@ -198,6 +198,11 @@ function test()
     b = sum(a .* 2)
     backpropagate(b)
     @test_approx_eq a[2].d 2.0
+
+    x = RAD(12.23)
+    y = x * ((x+1) * (x-5) * exp(x-2)) * (x-18) / (x+2)
+    backpropagate(y)
+    @test_approx_eq x.d ((x-18)*(x-5)*x*(x+1)*exp(x-2)/(x+2) + (x-5)*x*(x+1)*e(x-2)/(x+2)
 end
 
 function test_neural_network()
