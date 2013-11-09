@@ -19,6 +19,7 @@ end
 
 RAD(value) = RAD(value, zero(value), Record[])
 RAD(value, tape::Array{Record,1}) = RAD(value, zero(value), tape)
+
 value(x::RAD) = x.value
 partial(x::RAD) = x.partial
 
@@ -45,7 +46,7 @@ end
 
 *(x::Real, y::RAD) = RAD(x * value(y), [Record(y, x)])
 *(x::RAD, y::Real) = RAD(value(x) * y, [Record(x, y)])
-*(a::RAD, b::RAD) = RAD(value(a) * value(b), [Record(a, value(b)), Record(b, value(a))])
+*(x::RAD, y::RAD) = RAD(value(x) * value(y), [Record(x, value(y)), Record(y, value(x))])
 .*(x::RAD, y) = RAD(value(x) .* y, [Record(x, y)])
 
 +(x::Real, y::RAD) = RAD(x+value(y), [Record(y, 1)])
