@@ -44,21 +44,18 @@ end
 ==(x::RAD, y) = (value(x) == y)
 
 *(x::Real, y::RAD) = RAD(x * value(y), [Record(y, x)])
-*(x::Real, y::RAD) = RAD(value(y) * x, [Record(y, x)])
 *(x::RAD, y::Real) = RAD(value(x) * y, [Record(x, y)])
 *(a::RAD, b::RAD) = RAD(value(a) * value(b), [Record(a, value(b)), Record(b, value(a))])
 .*(x::RAD, y) = RAD(value(x) .* y, [Record(x, y)])
 
-+(x::RAD, y::RAD) = RAD(value(x) + value(y), [Record(x, 1), Record(y, 1)])
-+(x::RAD, y::RAD) = RAD(value(x) + value(y), [Record(x, 1), Record(y, 1)])
-+(x::RAD, y::Real) = RAD(value(x)+y, [Record(x, 1)])
 +(x::Real, y::RAD) = RAD(x+value(y), [Record(y, 1)])
++(x::RAD, y::Real) = RAD(value(x)+y, [Record(x, 1)])
++(x::RAD, y::RAD) = RAD(value(x) + value(y), [Record(x, 1), Record(y, 1)])
 
--(x::RAD, y::Real) = RAD(value(x)-y, [Record(x, 1)])
 -(x::Real, y::RAD) = RAD(x-value(y), [Record(y, -1)])
--(x::RAD) = RAD(-value(x), [Record(x, -1)])
--(x::RAD, y) = RAD(value(x) - y, [Record(x, 1)])
+-(x::RAD, y::Real) = RAD(value(x)-y, [Record(x, 1)])
 -(x::RAD, y::RAD) = RAD(value(x) - value(y), [Record(x, 1), Record(y, -1)])
+-(x::RAD) = RAD(-value(x), [Record(x, -1)])
 
 /(x::Real, y::RAD) = RAD(x/value(y), [Record(y, -x/(value(y)^2))])
 /(x::RAD, y::RAD) = RAD(value(x)/value(y), [Record(x, one(value(x))/value(y)), Record(y, -value(x)/(value(y)^2))])
