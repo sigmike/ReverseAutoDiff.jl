@@ -11,3 +11,4 @@ before_install:
 script:
   - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("ReverseAutoDiff"))`); Pkg.pin("ReverseAutoDiff"); Pkg.resolve()'
   - julia -e 'using ReverseAutoDiff; @assert isdefined(:ReverseAutoDiff); @assert typeof(ReverseAutoDiff) === Module'
+  - julia test/all.jl
