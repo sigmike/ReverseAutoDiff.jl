@@ -42,5 +42,7 @@ function backpropagate(x::RAD, partial)
 end
 
 *(x::Real, y::RAD) = rad(x * value(y), [Record(y, x)])
++(x::RAD, y::RAD) = rad(value(x) + value(y), [Record(x, 1), Record(y, 1)])
+==(x::RAD, y) = (value(x) == y)
 
 end # module
