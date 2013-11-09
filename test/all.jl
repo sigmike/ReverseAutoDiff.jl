@@ -1,6 +1,7 @@
 
 tests = [
   "basic",
+  "neural_network",
 ]
 
 for t in tests
