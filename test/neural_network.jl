@@ -6,7 +6,7 @@ using Base.Test
 function test()
     # https://en.wikipedia.org/w/index.php?title=Backpropagation&oldid=577461892#Derivation
     n = 10
-    w = [rad(x) for x in rand(n)]
+    w = [RAD(x) for x in rand(n)]
     x = rand(n)
     t = rand()
     activation(z) = 1.0 / (1 + exp(-z))
