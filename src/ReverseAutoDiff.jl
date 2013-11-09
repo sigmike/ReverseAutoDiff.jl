@@ -11,9 +11,9 @@ type Record
     partial
 end
 
-type RAD
-    value
-    partial
+type RAD{T}
+    value::T
+    partial::T
     tape::Array{Record,1}
 end
 
