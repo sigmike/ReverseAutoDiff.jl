@@ -33,6 +33,13 @@ function test()
     @test value(y) == 9.0
     @test_approx_eq partial(x) 6.0
     @test_approx_eq partial2(x) 2.0
+
+    x = RAD2(2.0)
+    y = x*x*x
+    backpropagate(y)
+    @test value(y) == 8.0
+    @test_approx_eq partial(x) 12.0
+    @test_approx_eq partial2(x) 12.0
 end
 
 end
