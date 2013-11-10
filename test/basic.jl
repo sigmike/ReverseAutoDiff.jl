@@ -7,8 +7,8 @@ function test()
     x = RAD(3.0)
     y = x
     backpropagate(y)
-    @test value(y) == 3.0
-    @test partial(x) == 1.0
+    @test_approx_eq value(y) 3.0
+    @test_approx_eq partial(x) 1.0
 
     y = 2x
     backpropagate(y)

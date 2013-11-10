@@ -4,12 +4,13 @@ using ReverseAutoDiff
 using Base.Test
 
 function test()
-    x = RAD2(3.0)
+    x = RAD(3.0)
     y = x
-    backpropagate(y)
+    backpropagate2(y)
+    backpropagate(partial(y))
     @test value(y) == 3.0
     @test partial(x) == 1.0
-    @test partial2(x) == 0.0
+    @test_approx_eq partial(partial(x)) 0.0
 
     y = 2x
     backpropagate(y)
