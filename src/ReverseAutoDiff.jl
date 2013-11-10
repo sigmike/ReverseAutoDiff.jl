@@ -2,65 +2,40 @@ module ReverseAutoDiff
 
 export
     RAD,
-    RAD2,
     backpropagate,
     value,
-    partial,
-    partial2
+    partial
 
 type Record
     variable
     partial
 end
 
-type Record2
-    variable
-    partial
-    partial2
-end
-
-abstract RADN
-
-type RAD{T} <: RADN
+type RAD{T}
     value::T
     partial::T
-    tape::Array{Record,1}
-end
-
-type RAD2{T} <: RADN
-    value::T
-    partial::RAD{T}
     tape::Array{Record,1}
 end
 
 RAD(value) = RAD(value, zero(value), Record[])
 RAD(value, tape::Array{Record,1}) = RAD(value, zero(value), tape)
 
-RAD2(value) = RAD2(value, RAD(zero(value)), Record[])
+value(x::RAD) = x.value
+partial(x::RAD) = x.partial
 
-value(x::RADN) = x.value
-partial(x::RADN) = x.partial
-partial2(x::RADN) = partial(x.partial)
-
-import Base.zero
-zero(x::RAD) = RAD(zero(value(x)))
-
-import Base.one
-one(x::RAD) = RAD(one(value(x)))
-
-function restart_backpropagation(x::RADN)
-    x.partial = zero(partial(x))
+function restart_backpropagation(x::RAD)
+    x.partial = zero(value(x))
     for record in x.tape
         restart_backpropagation(record.variable)
     end
 end
 
-function backpropagate(x::RADN)
+function backpropagate(x::RAD)
     restart_backpropagation(x)
-    backpropagate(x, one(partial(x)))
+    backpropagate(x, one(value(x)))
 end
 
-function backpropagate(x::RADN, partial)
+function backpropagate(x::RAD, partial)
     x.partial += partial
     for record in x.tape
         backpropagate(record.variable, partial * record.partial)
@@ -69,14 +44,14 @@ end
 
 ==(x::RAD, y) = (value(x) == y)
 
-*{T<:RADN}(x::Real, y::T) = T(x * value(y), [Record(y, x)])
-*(x::RADN, y::Real) = RAD(value(x) * y, [Record(x, y)])
-*(x::RADN, y::RADN) = RAD(value(x) * value(y), [Record(x, value(y)), Record(y, value(x))])
-.*(x::RADN, y) = RAD(value(x) .* y, [Record(x, y)])
+*(x::Real, y::RAD) = RAD(x * value(y), [Record(y, x)])
+*(x::RAD, y::Real) = RAD(value(x) * y, [Record(x, y)])
+*(x::RAD, y::RAD) = RAD(value(x) * value(y), [Record(x, value(y)), Record(y, value(x))])
+.*(x::RAD, y) = RAD(value(x) .* y, [Record(x, y)])
 
-+(x::Real, y::RADN) = RAD(x+value(y), [Record(y, one(value(y)))])
-+(x::RADN, y::Real) = RAD(value(x)+y, [Record(x, one(value(x)))])
-+(x::RADN, y::RADN) = RAD(value(x) + value(y), [Record(x, one(value(x))), Record(y, one(value(y)))])
++(x::Real, y::RAD) = RAD(x+value(y), [Record(y, one(value(y)))])
++(x::RAD, y::Real) = RAD(value(x)+y, [Record(x, one(value(x)))])
++(x::RAD, y::RAD) = RAD(value(x) + value(y), [Record(x, one(value(x))), Record(y, one(value(y)))])
 
 -(x::Real, y::RAD) = RAD(x-value(y), [Record(y, -one(value(y)))])
 -(x::RAD, y::Real) = RAD(value(x)-y, [Record(x, one(value(x)))])
