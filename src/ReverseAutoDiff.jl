@@ -5,7 +5,8 @@ export
     backpropagate,
     backpropagate2,
     value,
-    partial
+    partial,
+    partial2
 
 type Record
     variable
@@ -23,6 +24,7 @@ RAD(value, tape::Array{Record,1}) = RAD(value, zero(value), tape)
 
 value(x::RAD) = x.value
 partial(x::RAD) = x.partial
+partial2(x::RAD) = imag(x.partial)
 
 function restart_backpropagation(x::RAD, zero)
     x.partial = zero
@@ -36,9 +38,11 @@ function backpropagate(x::RAD)
     backpropagate(x, one(value(x)))
 end
 
+using DualNumbers
+
 function backpropagate2(x::RAD)
-    restart_backpropagation(x, RAD(zero(value(x))))
-    backpropagate(x, RAD(one(value(x))))
+    restart_backpropagation(x, dual(zero(value(x)), one(value(x))))
+    backpropagate(x, one(value(x)))
 end
 
 function backpropagate(x::RAD, partial)
