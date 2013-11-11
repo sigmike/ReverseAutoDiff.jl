@@ -3,10 +3,8 @@ module ReverseAutoDiff
 export
     RAD,
     backpropagate,
-    backpropagate2,
     value,
-    partial,
-    partial2
+    partial
 
 type Record
     variable
@@ -15,7 +13,7 @@ end
 
 type RAD{T}
     value::T
-    partial
+    partial::T
     tape::Array{Record,1}
 end
 
@@ -24,24 +22,16 @@ RAD(value, tape::Array{Record,1}) = RAD(value, zero(value), tape)
 
 value(x::RAD) = x.value
 partial(x::RAD) = x.partial
-partial2(x::RAD) = imag(x.partial)
 
-function restart_backpropagation(x::RAD, zero)
-    x.partial = zero
+function restart_backpropagation(x::RAD)
+    x.partial = zero(value(x))
     for record in x.tape
-        restart_backpropagation(record.variable, zero)
+        restart_backpropagation(record.variable)
     end
 end
 
 function backpropagate(x::RAD)
-    restart_backpropagation(x, zero(value(x)))
-    backpropagate(x, one(value(x)))
-end
-
-using DualNumbers
-
-function backpropagate2(x::RAD)
-    restart_backpropagation(x, dual(zero(value(x)), one(value(x))))
+    restart_backpropagation(x)
     backpropagate(x, one(value(x)))
 end
 
