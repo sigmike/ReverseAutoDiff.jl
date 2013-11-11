@@ -44,6 +44,10 @@ end
 
 ==(x::RAD, y) = (value(x) == y)
 
+import Base.zero, Base.one
+zero(x::RAD) = RAD(zero(value(x)))
+one(x::RAD) = RAD(one(value(x)))
+
 *(x::Real, y::RAD) = RAD(x * value(y), [Record(y, x)])
 *(x::RAD, y::Real) = RAD(value(x) * y, [Record(x, y)])
 *(x::RAD, y::RAD) = RAD(value(x) * value(y), [Record(x, value(y)), Record(y, value(x))])
